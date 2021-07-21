@@ -10,10 +10,10 @@
 ###################################################################################################
 
 ###########      Library             ###########
-library(tidyhydat)     # HYDAT access
+# library(tidyhydat)     # HYDAT access
 library(dplyr)         # for select function
+library(sp)            # processing spatial data, loaded as req't of rgdal
 library(rgdal)         # for readOGR
-library(sp)            # processing spatial data
 
 ###########     Obtain flow data     ###########
 # If the most recent Hydat.sqlite file is not already in the Packages folder, it will be downloaded.
@@ -23,7 +23,7 @@ library(sp)            # processing spatial data
 # Keeping a file folder with old Hydat versions to be able to reproduce old work is highly suggested
 # ***Make sure Dependencies folder exists. ***
 # set hydat location, download if not found
-hy_file <- "./Dependencies/Hydat"
+hy_file <- "../Dependencies/Hydat"
 if( length( grep("Hydat.sqlite", list.files(hy_file)))==0){
   # hydat file will be downloaded in dependencies and subsequent tidyhydat calls will use this file
   # Highly suggest keeping a file folder with old Hydat versions to be able to reproduce old work
@@ -35,6 +35,9 @@ if( length( grep("Hydat.sqlite", list.files(hy_file)))==0){
   hy_db <- paste0(hy_file, "/Hydat.sqlite3")
   hy_set_default_db(hydat_path = hy_db)
 }
+
+version <- hy_version(hydat_path = "../Dependencies/Hydat/Hydat.sqlite3")
+version <- substring(version$Date,0,7)
 
 
 ##### List of previously calculated metrics #####
@@ -49,12 +52,12 @@ list.var.name <- c("Annual Mean Yield", "Number of Flood Days", "Number of Flood
 
 ## Defining list of stations and reference year ##
 # all RHBN-U stations:
-stations <- read.csv("./Dependencies/RHBN_U.csv", header = TRUE)
+stations <- read.csv("../Dependencies/RHBN_U.csv", header = TRUE)
 stn.list.full <- as.character(stations$STATION_NUMBER)
 # reference year for snapshot (and end of trends?)
-ref <- 2016
+ref <- 2019
 # reference range for animations
-ref.range <- c(2001:2016)
+ref.range <- c(2001:2019)
 # start year for trend calculations; legacy - can probably be hard-wired below
 trend.minyr <- 1970
 # set aggregate method - mean or median
@@ -66,9 +69,9 @@ aggmethod <- "median"
 # Load Pearse drainage area and water body shapefiles
 #WaterBodies<- readOGR(dsn = "C:/Users/noteboomm/Documents/CESI/CESI_WQI_Calculator_V_3/Map_Creation", 
                       #"MainWaterBodiest")
-WaterBodies<- readOGR(dsn = "./Dependencies", "MainWaterBodiest")
+WaterBodies<- readOGR(dsn = "../Dependencies", "MainWaterBodiest")
 # load ecozone layer (basemap options)
-CanadaBound <- readOGR(dsn = "./Dependencies", "CanadaBound")
+CanadaBound <- readOGR(dsn = "../Dependencies", "CanadaBound")
 crs <- WaterBodies@proj4string
 # Load station points as spatial object, and apply projection information
 stn_data <- as.data.frame(hy_stations() %>% dplyr::select(STATION_NUMBER, LATITUDE, LONGITUDE))
